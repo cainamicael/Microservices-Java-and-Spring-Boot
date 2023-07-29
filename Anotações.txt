@@ -1,0 +1,7 @@
+Ferramentas utilizadas: 
+
+    Apache Maven
+    JDK lts
+    Docker
+    intellij idea
+
