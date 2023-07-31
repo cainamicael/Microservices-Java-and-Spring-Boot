@@ -11,3 +11,42 @@ Criando nosso discovery server (Eureka):
 Dependências:
 
     Eureka Server
+
+Configrações importantes a principio do pom.xml:
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.6.4</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<java.version>11</java.version>
+		<spring-cloud.version>2021.0.1</spring-cloud.version>
+	</properties>
+
+Notations: 
+
+    @EnableEurekaServer (Na classe main)
+
+Configurando Application.yml:
+
+    Renomear o application.properties para application.yml
+
+    #Vamos nomear - Pode quer qualquer nome
+    spring:
+    application:
+        name: eurekaserver
+        
+    #Vamos configurar a porta    
+    server:
+    port: 8761
+
+    #Dizendo ao eureka que não é para se auto-registrar, pois isso é papel do gateway
+    eureka:
+    client:
+        register-with-eureka: false
+        fetch-registry: false
+  
+Para acessar o eureka: http://localhost:8761

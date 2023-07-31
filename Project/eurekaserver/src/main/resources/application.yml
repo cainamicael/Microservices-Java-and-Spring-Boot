@@ -1,0 +1,15 @@
+#Vamos nomear - Pode quer qualquer nome
+spring:
+  application:
+    name: eurekaserver
+    
+#Vamos configurar a porta    
+server:
+  port: 8761
+
+#Dizendo ao eureka que não é para se auto-registrar, pois isso é papel do gateway
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  
