@@ -6,3 +6,8 @@ Ferramentas utilizadas:
     IDE
     Insomnia HTTP
 
+Criando nosso discovery server (Eureka):
+
+Dependências:
+
+    Eureka Server
