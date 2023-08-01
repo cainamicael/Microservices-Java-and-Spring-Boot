@@ -161,13 +161,58 @@ Criando ClienteRepository (pct infra.repository):
 
     package io.github.cainamicael.msclientes.infra.repository;
 
+    import java.util.Optional;
+
     import org.springframework.data.jpa.repository.JpaRepository;
 
     import io.github.cainamicael.msclientes.domain.Cliente;
 
     public interface ClienteRepository extends JpaRepository<Cliente, Long>{
 
+        Optional<Cliente> findByCpf(String cpf); //Método que pedimos para criar
+
     }
 
-Vamos criar nosso controller:
+Criando nosso DTO (pct application.representation):
+
+    package io.github.cainamicael.msclientes.application.representation;
+
+    import io.github.cainamicael.msclientes.domain.Cliente;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+
+    @Data
+    @NoArgsConstructor
+    public class ClienteSaveRequest {
+
+        private String cpf;
+        private String nome;
+        private Integer idade;
+        
+        //Este método já transforma o dto em entidade
+        public Cliente toModel() {
+            return new Cliente(cpf, nome, idade);
+        }
+    }
+
+Métodos importantes:
+
+    //Construir uma url dinâmica através da url corrente - http://localhost:PORT/clientes?cpf=01234567890
+    URI headerLocation = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .query("cpf={cpf}")
+            .buildAndExpand(cliente.getCpf())
+            .toUri();
+    return ResponseEntity.created(headerLocation).build();
+
+    //Este método já transforma o dto em entidade
+        public Cliente toModel() {
+            return new Cliente(cpf, nome, idade);
+        }
+
+Vamos criar nosso service e controller:
+
+
+
+
 

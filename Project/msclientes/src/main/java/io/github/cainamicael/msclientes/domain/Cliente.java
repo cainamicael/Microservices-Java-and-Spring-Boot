@@ -1,11 +1,14 @@
 package io.github.cainamicael.msclientes.domain;
 
+import java.util.Map;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -25,5 +28,10 @@ public class Cliente {
 		this.cpf = cpf;
 		this.nome = nome;
 		this.idade = idade;
+	}
+	
+	//Por algum motivo, o lombok não funcionou e tuve que criar este método manualmente
+	public String getCpf() {
+		return this.cpf;
 	}
 }
