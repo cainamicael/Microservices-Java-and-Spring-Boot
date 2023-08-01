@@ -1,0 +1,23 @@
+#Permite localizar os micro serviços e com letra maiuscula
+spring:
+  application:
+    name: mscloudgateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+#Porta do Gateway
+server:
+  port: 8080
+
+#Onde está o Eureka
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+      
