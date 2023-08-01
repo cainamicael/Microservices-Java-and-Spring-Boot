@@ -22,7 +22,7 @@ Configrações importantes a principio do pom.xml:
 	</parent>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>11</java.version> <!--Estou usando o 17-->
 		<spring-cloud.version>2021.0.1</spring-cloud.version>
 	</properties>
 
@@ -50,3 +50,124 @@ Configurando Application.yml:
         fetch-registry: false
   
 Para acessar o eureka: http://localhost:8761
+
+Criando Micro Serviço de Clientes:
+
+Aqui vamos ter nossos endpoints do clieante
+
+Dependências:
+
+    Spring web
+    Lombok
+    Jpa
+    H2 database
+
+    Adicionais: Spring clould, Eureka client
+
+Vamos padronixar nosso pom.xml
+
+Vamos adicionar mais dependências no pom:
+
+Dentro do escopo das dependências:
+
+	<dependency>
+		<groupId>org.springframework.cloud</groupId>
+		<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+	</dependency>
+
+Abaixo do feclhamento da teg geral das dependências:
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+Registrando micro serviço no eureka server
+
+application.yml:
+
+    #Nome que vamos refetencias o ms dentro do eureka
+    spring:
+    application:
+        name: msclientes
+
+    #A porta do nosso ms - A porta 0 quer dizer que vai subir em uma porta randômica para facilitar nosso trabalho de referenciar a porta    
+    server:
+    port: 0
+    
+    #Onde está meu discovery server eureka | o instance é para o spring gerar um nome aleatório do ms clientes
+    eureka:
+    client:
+        service-url:
+        defaultZone: http://localhost:8761/eureka
+    instance:
+        instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}} 
+
+
+Notation (classe main):
+
+    @EnableEurekaClient
+
+Vamos criar nossa entidade (pct domain):
+
+Notations:
+
+    @Entity
+    @Data //Lombok
+    @NoArgsConstructor //Para tembém criar um construtor sem argumentos
+    @Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+
+Entidade:
+
+    package io.github.cainamicael.msclientes.domain;
+
+    import javax.persistence.Entity;
+    import javax.persistence.GeneratedValue;
+    import javax.persistence.GenerationType;
+    import javax.persistence.Id;
+
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+
+    @Entity
+    @Data
+    @NoArgsConstructor
+    public class Cliente {
+
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+        private String cpf;
+        private String nome;
+        private Integer idade;
+        
+        public Cliente(String cpf, String nome, Integer idade) {
+            super();
+            this.cpf = cpf;
+            this.nome = nome;
+            this.idade = idade;
+        }
+    }
+
+Criando ClienteRepository (pct infra.repository):
+
+    package io.github.cainamicael.msclientes.infra.repository;
+
+    import org.springframework.data.jpa.repository.JpaRepository;
+
+    import io.github.cainamicael.msclientes.domain.Cliente;
+
+    public interface ClienteRepository extends JpaRepository<Cliente, Long>{
+
+    }
+
+Vamos criar nosso controller:
+

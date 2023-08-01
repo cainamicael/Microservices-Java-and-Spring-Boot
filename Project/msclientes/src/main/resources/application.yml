@@ -1,0 +1,16 @@
+#Nome que vamos refetencias o ms dentro do eureka
+spring:
+  application:
+    name: msclientes
+
+#A porta do nosso ms - A porta 0 quer dizer que vai subir em uma porta randômica para facilitar nosso trabalho de referenciar a porta    
+server:
+  port: 0
+  
+#Onde está meu discovery server eureka | o instance é para o spring gerar um nome aleatório do ms clientes
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}} 
