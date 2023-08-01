@@ -37,9 +37,9 @@ public class ClientesController {
 				.query("cpf={cpf}")
 				.buildAndExpand(cliente.getCpf())
 				.toUri();
-		
+
 		return ResponseEntity.created(headerLocation).build();
 	}
 
-	
+
 }
