@@ -6,6 +6,7 @@ Ferramentas utilizadas:
     IDE
     Insomnia HTTP
 
+Aula 7
 Criando nosso discovery server (Eureka):
 
 Dependências:
@@ -51,6 +52,7 @@ Configurando Application.yml:
   
 Para acessar o eureka: http://localhost:8761
 
+Aula 8 - 11
 Criando Micro Serviço de Clientes:
 
 Aqui vamos ter nossos endpoints do clieante
@@ -298,3 +300,7 @@ Métodos importantes:
         public Cliente toModel() {
             return new Cliente(cpf, nome, idade);
         }
+
+Aula 12
+Criação do Clould Gateway:
+
