@@ -21,14 +21,8 @@ public class Cliente {
 	private Integer idade;
 	
 	public Cliente(String cpf, String nome, Integer idade) {
-		super();
 		this.cpf = cpf;
 		this.nome = nome;
 		this.idade = idade;
-	}
-	
-	//Por algum motivo, o lombok não funcionou e tuve que criar este método manualmente
-	public String getCpf() {
-		return this.cpf;
 	}
 }
