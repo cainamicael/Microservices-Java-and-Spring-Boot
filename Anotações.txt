@@ -421,3 +421,124 @@ Application.yml:
 
 Colocar @EnableEurekaClient na classe main
 
+Entidade:
+
+    package io.github.cainamicael.mscartoes.domain;
+
+    import java.math.BigDecimal;
+
+    import javax.persistence.Entity;
+    import javax.persistence.EnumType;
+    import javax.persistence.Enumerated;
+    import javax.persistence.GeneratedValue;
+    import javax.persistence.GenerationType;
+    import javax.persistence.Id;
+
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+
+    @Entity
+    @Data
+    @NoArgsConstructor
+    public class Cartao {
+        
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+        private String nome;
+        @Enumerated(EnumType.STRING)
+        private BandeiraCartao bandeira; //Vai ser um enum
+        private BigDecimal renda;
+        private BigDecimal limiteBasico;
+        
+        public Cartao(String nome, BandeiraCartao bandeira, BigDecimal renda, BigDecimal limiteBasico) {
+            super();
+            this.nome = nome;
+            this.bandeira = bandeira;
+            this.renda = renda;
+            this.limiteBasico = limiteBasico;
+        }
+    }
+
+Notations: 
+
+    @Entity
+    @Data
+    @NoArgsConstructor
+    @Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Enumerated(EnumType.STRING)
+
+Enum:
+
+    package io.github.cainamicael.mscartoes.domain;
+
+    public enum BandeiraCartao {
+        MASTERCARD, VISA
+    }
+
+Repository:
+
+    package io.github.cainamicael.mscartoes.infra.repository;
+
+    import org.springframework.data.jpa.repository.JpaRepository;
+
+    import io.github.cainamicael.mscartoes.domain.Cartao;
+
+    public interface CartaoRepository extends JpaRepository<Cartao, Long>{
+
+        List<Cartao> findByRendaLessThanEqual(BigDecimal rendaBigDecimal);
+
+    }
+
+Service:
+
+    package io.github.cainamicael.mscartoes.application;
+
+    import java.math.BigDecimal;
+    import java.util.List;
+
+    import org.springframework.stereotype.Service;
+    import org.springframework.transaction.annotation.Transactional;
+
+    import io.github.cainamicael.mscartoes.domain.Cartao;
+    import io.github.cainamicael.mscartoes.infra.repository.CartaoRepository;
+    import lombok.RequiredArgsConstructor;
+
+    @Service
+    @RequiredArgsConstructor
+    public class CartaoService {
+        
+        private final CartaoRepository repository;
+        
+        @Transactional
+        public Cartao save(Cartao cartao) {
+            return repository.save(cartao);
+        }
+        
+        @Transactional
+        public List<Cartao> getCartoesRendaMenorIgual(Long renda) {
+            var rendaBigBecimal = BigDecimal.valueOf(renda);
+            return repository.findByRendaLesThanEqual(rendaBigBecimal);
+        }
+        
+    }
+
+Notations:
+
+    @Service
+    @RequiredArgsConstructor
+    @Transactional
+
+Outra forma de injetar dependência, sem usar o Autowired:
+
+    @Service
+    @RequiredArgsConstructor
+    public class CartaoService {
+        
+        private final CartaoRepository repository;
+
+    }
+
+Resource(Controller):
+
