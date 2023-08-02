@@ -702,3 +702,8 @@ Controller (Mesmo resource que já existe, só adicionar o método):
 		List<CartaoPorClienteResponse> resultList = lista.stream().map(CartaoPorClienteResponse::fromModel).collect(Collectors.toList());
 		return ResponseEntity.ok(resultList);
 	}
+
+Aula 20
+Registrando MSCartoes no Gateway:
+
+    .route(r -> r.path("/cartoes/**").uri("lb://mscartoes"))    

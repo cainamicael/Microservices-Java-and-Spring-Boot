@@ -22,7 +22,8 @@ public class MsclouldgatewayApplication {
 		return builder
 				.routes()
 				//Definindo rotas - Toda vez que a gente entrar nessa rota, vai ser redirecionado para a url (LoadBalancer do micro serviço), com o LoadBalancer
-				.route(r -> r.path("/clientes/**").uri("lb://msclientes")) //O ** quer dizer qq coisa que venha depois e lb é o loadbalancer
+					.route(r -> r.path("/clientes/**").uri("lb://msclientes")) //O ** quer dizer qq coisa que venha depois e lb é o loadbalancer
+					.route(r -> r.path("/cartoes/**").uri("lb://mscartoes")) //O ** quer dizer qq coisa que venha depois e lb é o loadbalancer
 				.build();
 	}
 }
