@@ -301,7 +301,7 @@ Métodos importantes:
             return new Cliente(cpf, nome, idade);
         }
 
-Aula 12
+Aula 12 - 13
 Criação do Cloud Gateway:
 
 Dependências:
@@ -388,4 +388,36 @@ Application.yml:
         defaultZone: http://localhost:8761/eureka
 
 Agora podemos fazer as requisições para uma porta física, a 8080
+
+Aula 14
+Micro serviço de cartões:
+
+Dependências:
+
+    Lombok
+    Spring Web
+    Jpa
+    H2 Database
+    Eureka Client
+
+Application.yml:
+
+    #Nome da aplicação
+    spring:
+    application:
+        name: mscartoes
+        
+    #Configurando porta
+    server:
+    port: 0
+    
+    #Localizando o eureka e setando nome com sufixo aleatorio - não pode esquecer do /eureka
+    eureka:
+    client:
+        service-url:
+        defaultZone: http://localhost:8761/eureka
+    instance:
+        instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+Colocar @EnableEurekaClient na classe main
 
