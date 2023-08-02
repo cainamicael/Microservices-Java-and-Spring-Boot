@@ -389,7 +389,7 @@ Application.yml:
 
 Agora podemos fazer as requisições para uma porta física, a 8080
 
-Aula 14
+Aula 14 - 18
 Micro serviço de cartões:
 
 Dependências:
@@ -542,3 +542,163 @@ Outra forma de injetar dependência, sem usar o Autowired:
 
 Resource(Controller):
 
+    package io.github.cainamicael.mscartoes.application;
+
+    import java.util.List;
+
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.http.HttpStatus;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.web.bind.annotation.GetMapping;
+    import org.springframework.web.bind.annotation.PostMapping;
+    import org.springframework.web.bind.annotation.RequestBody;
+    import org.springframework.web.bind.annotation.RequestMapping;
+    import org.springframework.web.bind.annotation.RequestParam;
+    import org.springframework.web.bind.annotation.RestController;
+
+    import io.github.cainamicael.mscartoes.domain.Cartao;
+    import io.github.cainamicael.mscartoes.representation.CartaoSavaRequest;
+
+    @RestController
+    @RequestMapping("cartoes")
+    public class CartoesResource {
+        
+        @Autowired
+        private CartaoService service;
+        
+        @GetMapping
+        public String status() {
+            return "OK";
+        }
+        
+        @PostMapping
+        public ResponseEntity<?> cadastra(@RequestBody CartaoSavaRequest request) {
+            Cartao cartao = request.toModel();
+            service.save(cartao);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+        
+        @GetMapping(params = "renda")
+        public ResponseEntity<List<Cartao>> getCartoesRendaAte(@RequestParam("renda") Long renda ) {
+            List<Cartao> list = service.getCartoesRendaMenorIgual(renda);
+            return ResponseEntity.ok(list);
+        }
+    }
+
+Aula 19:
+Novo endpoint. Vamos precisar de uma nova entidade
+
+Dizendo que cartão cada cliente vai ter:
+
+Listando cartões pelo cliente:
+
+Nova entidade, cartão cliente:
+
+    package io.github.cainamicael.mscartoes.domain;
+
+    import java.math.BigDecimal;
+
+    import javax.persistence.Entity;
+    import javax.persistence.GeneratedValue;
+    import javax.persistence.GenerationType;
+    import javax.persistence.Id;
+    import javax.persistence.JoinColumn;
+    import javax.persistence.ManyToOne;
+
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+
+    @Entity
+    @Data
+    @NoArgsConstructor
+    public class ClienteCartao {
+
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+        private String cpf;
+        
+        @ManyToOne
+        @JoinColumn(name = "id_cartao")
+        private Cartao cartao;
+        
+        private BigDecimal limite;
+    }
+
+Repository:
+
+    package io.github.cainamicael.mscartoes.infra.repository;
+
+    import java.util.List;
+
+    import org.springframework.data.jpa.repository.JpaRepository;
+
+    import io.github.cainamicael.mscartoes.domain.ClienteCartao;
+
+    public interface ClienteCartaoRepository extends JpaRepository<ClienteCartao, Long>{
+
+        List<ClienteCartao> findByCpf(String cpf);
+    }
+
+Service:
+
+    package io.github.cainamicael.mscartoes.application;
+
+    import java.util.List;
+
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.stereotype.Service;
+
+    import io.github.cainamicael.mscartoes.domain.ClienteCartao;
+    import io.github.cainamicael.mscartoes.infra.repository.ClienteCartaoRepository;
+
+    @Service
+    public class ClienteCartaoService {
+        
+        @Autowired
+        private ClienteCartaoRepository repository;
+        
+        private List<ClienteCartao> listCartoesByCpf(String cpf) {
+            return repository.findByCpf(cpf);
+        }
+
+    }
+
+DTO CartaoPorClienteResponse:
+
+    package io.github.cainamicael.mscartoes.representation;
+
+    import java.math.BigDecimal;
+
+    import io.github.cainamicael.mscartoes.domain.ClienteCartao;
+    import lombok.AllArgsConstructor;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class CartaoPorClienteResponse {
+
+        private String nome;
+        private String bandeira;
+        private BigDecimal limiteLiberado;
+        
+        public static CartaoPorClienteResponse fromModel(ClienteCartao model) {
+            return new CartaoPorClienteResponse(
+                model.getCartao().getNome(),
+                model.getCartao().getBandeira().toString(),
+                model.getLimite()
+            );
+        }
+        
+    }
+
+Controller (Mesmo resource que já existe, só adicionar o método):
+
+	@GetMapping(params = "cpf")
+	public ResponseEntity<List<CartaoPorClienteResponse>> getCartoesByCliente(@RequestParam("cpf") String cpf) {
+		List<ClienteCartao> lista = clienteCartaoService.listCartoesByCpf(cpf);
+		List<CartaoPorClienteResponse> resultList = lista.stream().map(CartaoPorClienteResponse::fromModel).collect(Collectors.toList());
+		return ResponseEntity.ok(resultList);
+	}
