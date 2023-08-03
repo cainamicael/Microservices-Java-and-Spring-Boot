@@ -707,3 +707,9 @@ Aula 20
 Registrando MSCartoes no Gateway:
 
     .route(r -> r.path("/cartoes/**").uri("lb://mscartoes"))    
+
+Aula 21
+Implementando micro serviço avaliador de crédito, que vai se comunicar com os outros ms:
+
+
+
