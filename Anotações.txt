@@ -703,7 +703,7 @@ Controller (Mesmo resource que já existe, só adicionar o método):
 		return ResponseEntity.ok(resultList);
 	}
 
-Aula 20
+Aula 20-25
 Registrando MSCartoes no Gateway:
 
     .route(r -> r.path("/cartoes/**").uri("lb://mscartoes"))    
@@ -791,3 +791,79 @@ Interface que se comunica com o mscartoes:
 
     }
 
+Aula 26
+Tratando erros da comunicação
+
+Classe 1:
+
+    package cio.github.cainamicael.msavaliadorcredito.application.ex;
+
+    public class DadosClienteNotFoundException extends Exception{
+        
+        public DadosClienteNotFoundException() {
+            super("Dados do cliente não encontrados para o cpf informado");
+        }
+        
+    }
+
+Classe 2:
+
+    package cio.github.cainamicael.msavaliadorcredito.application.ex;
+
+    import lombok.Getter;
+
+    public class ErroComunicacaoMicroservicesException extends Exception {
+        
+        @Getter
+        private Integer status;
+
+        public ErroComunicacaoMicroservicesException(String msg, Integer status) {
+            super(msg);
+            this.status = status;
+        }
+    }
+
+Service:
+
+	public SituacaoCliente obterSituacaoCliente(String cpf) throws DadosClienteNotFoundException, ErroComunicacaoMicroservicesException {
+		//precisamos consultar o msclientes para obter os dados - vamos usar OpenFeign
+		
+		//Comunicação síncrona com o mscliente
+		try {
+			ResponseEntity<DadosCliente> dadosClienteResponse = clienteClient.dadosCliente(cpf);
+			
+			//Comunicação síncrona com o mscartoes
+			ResponseEntity<List<CartaoCliente>> cartoesResponse = cartoesClient.getCartoesByCliente(cpf);
+			
+			return SituacaoCliente
+					.builder()
+					.cliente(dadosClienteResponse.getBody())
+					.cartoes(cartoesResponse.getBody())
+					.build(); //Pegar apenas a informação do ResponseEntity	
+		} catch (FeignException.FeignClientException e) {
+			int status = e.status();
+			
+			if(HttpStatus.NOT_FOUND.value() == status) {
+				throw new DadosClienteNotFoundException();
+			}
+			
+			throw new ErroComunicacaoMicroservicesException(cpf, status);
+		}
+	}
+
+Controller:
+
+    @GetMapping(value = "situacao-cliente", params = "cpf")
+	public ResponseEntity<?> consultaSituacaoCliente(@RequestParam("cpf") String cpf) {
+		try {
+			SituacaoCliente situacaoCliente = avaliadorCreditoService.obterSituacaoCliente(cpf);
+			return ResponseEntity.ok(situacaoCliente);
+			
+		} catch (DadosClienteNotFoundException e) {
+			// TODO Auto-generated catch block
+			return ResponseEntity.notFound().build();
+		} catch (ErroComunicacaoMicroservicesException e) {
+			// TODO Auto-generated catch block
+			return ResponseEntity.status(HttpStatus.resolve(e.getStatus())).body(e.getMessage());
+		}
+	}
