@@ -1084,7 +1084,7 @@ Acessando interface gráfica:
     password: guest
 
 Aula 32 
-Criando Subscriber(quem vai ouvir/receber as mensagens) para fila de emissão de cartões: 
+Criando Subscriber(quem vai ouvir/receber as mensagens) para fila de emissão de cartões (MSCLIENTES): 
 
 Para usar o rabbitmq no meu ms, preciso adicionar a dependencia amqp:
 
@@ -1092,8 +1092,6 @@ Para usar o rabbitmq no meu ms, preciso adicionar a dependencia amqp:
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-amqp</artifactId>
     </dependency>
-
-Irei fazer isso no meu msclientes
 
 Vamos agora criar a fila de emissão de cartões no painel do rabbitmq:
 
@@ -1116,8 +1114,8 @@ Referenciando fila no ms (application.yml):
 
     #Configurando a fila
     mq:
-    queues:
-        emissao-cartoes: emissao-cartoes
+        queues:
+            emissao-cartoes: emissao-cartoes
 
 Notations:
 
@@ -1143,3 +1141,35 @@ Classe que vai escutar as mensagens:
         }
     }
 
+Aula 33
+Criando publisher (quem vai publicar a mensagem - MSAVALIADORCREDITO):
+
+dependência:
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+Conectando com o rabbitmq:
+
+    #Nome da aplicação e conexão com rabbitmq (application.yml):
+    spring:
+    application:
+        name: mscartoes
+    rabbitmq:
+        host: localhost
+        port: 5672
+        username: guest
+        password: guest
+
+Referenciando fila no ms (application.yml):
+
+    #Configurando a fila
+    mq:
+        queues:
+            emissao-cartoes: emissao-cartoes
+
+Notations:
+
+    @EnableRabbit (classe main)
