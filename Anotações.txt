@@ -1056,6 +1056,7 @@ Resource (FeignClient):
 
     }
 
+Aula 30
 Mensageria:
 
 Iremos usar o RabbitMQ
@@ -1080,4 +1081,65 @@ Acessando interface gráfica:
 
     localhost:15672
     username: guest
-    password: guest 
+    password: guest
+
+Aula 32 
+Criando Subscriber(quem vai ouvir/receber as mensagens) para fila de emissão de cartões: 
+
+Para usar o rabbitmq no meu ms, preciso adicionar a dependencia amqp:
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-amqp</artifactId>
+    </dependency>
+
+Irei fazer isso no meu msclientes
+
+Vamos agora criar a fila de emissão de cartões no painel do rabbitmq:
+
+    Type: classic
+    Name: emissao-cartoes
+
+Conectando com o rabbitmq:
+
+    #Nome da aplicação e conexão com rabbitmq (application.yml):
+    spring:
+    application:
+        name: mscartoes
+    rabbitmq:
+        host: localhost
+        port: 5672
+        username: guest
+        password: guest
+
+Referenciando fila no ms (application.yml):
+
+    #Configurando a fila
+    mq:
+    queues:
+        emissao-cartoes: emissao-cartoes
+
+Notations:
+
+    @EnableRabbit (classe main)
+    @Component (na classe que vamos usar para escutar as mensagens do rabbitmq)
+    @RabbitListener(queues = "${mq.queues.emissao-cartoes}")
+    @Payload
+
+Classe que vai escutar as mensagens:
+
+    package io.github.cainamicael.mscartoes.infra.mqueue;
+
+    import org.springframework.amqp.rabbit.annotation.RabbitListener;
+    import org.springframework.messaging.handler.annotation.Payload;
+    import org.springframework.stereotype.Component;
+
+    @Component
+    public class EmissaoCartaoSubscriver {
+
+        @RabbitListener(queues = "${mq.queues.emissao-cartoes}")
+        public void receberSolicitacaoEmissao(@Payload String payload) {
+            System.out.println(payload);
+        }
+    }
+

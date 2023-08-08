@@ -1,7 +1,12 @@
-#Nome da aplicação
+#Nome da aplicação e conexão com rabbitmq
 spring:
   application:
     name: mscartoes
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
     
 #Configurando porta
 server:
@@ -14,3 +19,8 @@ eureka:
       defaultZone: http://localhost:8761/eureka
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+#Configurações da fila
+mq:
+  queues:
+    emissao-cartoes: emissao-cartoes
