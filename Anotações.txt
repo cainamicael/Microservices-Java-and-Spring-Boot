@@ -1055,3 +1055,23 @@ Resource (FeignClient):
         ResponseEntity<List<Cartao>> getCartoesRendaAte(@RequestParam("renda") Long renda);
 
     }
+
+Mensageria:
+
+Iremos usar o RabbitMQ
+
+RabbitMQ via docker:
+
+Scripc retirado do site do RabbitMQ:
+
+docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.12-management
+
+    docker run = Serve para rodar uma imagem docker - Cria um container
+    -it = Modo interativo. Posso ficar interagindo com o container na linha de comando
+    -rm = Quando eu encerrar o processo, ele vai destruir o container (Não vamos usar esta opção)
+    --name rabbitmq = Dizendo que vou nomear o container, e em seguida já coloco o nome que eu quero
+    -p 5672 (Porta exposta) : 5672 (Porta do container) = Dizendo que vai rodar em uma porta e expondo a porta
+    -p 15672:15672 = Porta do administrador - Onde iremos acessar a interface gráfica
+    rabbitmq:3.12-management = Imagem usada para startar o container
+
+Ficará assim: docker run -it --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.12-management
