@@ -867,3 +867,191 @@ Controller:
 			return ResponseEntity.status(HttpStatus.resolve(e.getStatus())).body(e.getMessage());
 		}
 	}
+
+Aula 27:
+Implementando avaliação do cliente com regra de negócio:
+
+Service:
+
+    package cio.github.cainamicael.msavaliadorcredito.application;
+
+    import java.math.BigDecimal;
+    import java.util.List;
+    import java.util.stream.Collectors;
+
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.http.HttpStatus;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.stereotype.Service;
+
+    import cio.github.cainamicael.msavaliadorcredito.application.ex.DadosClienteNotFoundException;
+    import cio.github.cainamicael.msavaliadorcredito.application.ex.ErroComunicacaoMicroservicesException;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.Cartao;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.CartaoAprovado;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.CartaoCliente;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.DadosCliente;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.RetornoAvaliacaoCliente;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.SituacaoCliente;
+    import cio.github.cainamicael.msavaliadorcredito.infra.clients.CartoesResourceClient;
+    import cio.github.cainamicael.msavaliadorcredito.infra.clients.ClienteResourceClient;
+    import feign.FeignException;
+    import lombok.RequiredArgsConstructor;
+
+    @Service
+    @RequiredArgsConstructor
+    public class AvaliadorCreditoService {
+        
+        @Autowired
+        private ClienteResourceClient clienteClient;
+        
+        @Autowired
+        private CartoesResourceClient cartoesClient;
+
+        
+        public SituacaoCliente obterSituacaoCliente(String cpf) throws DadosClienteNotFoundException, ErroComunicacaoMicroservicesException {
+            //precisamos consultar o msclientes para obter os dados - vamos usar OpenFeign
+            
+            //Comunicação síncrona com o mscliente
+            try {
+                ResponseEntity<DadosCliente> dadosClienteResponse = clienteClient.dadosCliente(cpf);
+                
+                //Comunicação síncrona com o mscartoes
+                ResponseEntity<List<CartaoCliente>> cartoesResponse = cartoesClient.getCartoesByCliente(cpf);
+                
+                return SituacaoCliente
+                        .builder()
+                        .cliente(dadosClienteResponse.getBody())
+                        .cartoes(cartoesResponse.getBody())
+                        .build(); //Pegar apenas a informação do ResponseEntity	
+            } catch (FeignException.FeignClientException e) {
+                int status = e.status();
+                
+                if(HttpStatus.NOT_FOUND.value() == status) {
+                    throw new DadosClienteNotFoundException();
+                }
+                
+                throw new ErroComunicacaoMicroservicesException(cpf, status);
+            }
+        }
+        
+        public RetornoAvaliacaoCliente realizarAvaliacao (String cpf, Long renda) throws DadosClienteNotFoundException, ErroComunicacaoMicroservicesException {
+            try {
+                ResponseEntity<DadosCliente> dadosClienteResponse = clienteClient.dadosCliente(cpf);
+                ResponseEntity<List<Cartao>> cartoesResponse = cartoesClient.getCartoesRendaAte(renda);
+                
+                List<Cartao> cartoes = cartoesResponse.getBody();
+                List<CartaoAprovado> listaCartoesAprovados = cartoes.stream().map((Cartao cartao) -> {
+                    DadosCliente dadosCliente = dadosClienteResponse.getBody();
+                    BigDecimal limiteBasico = cartao.getLimiteBasico();
+                    BigDecimal idadeBD = BigDecimal.valueOf(dadosCliente.getIdade());
+
+                    var fator = idadeBD.divide(BigDecimal.valueOf(10));
+                    BigDecimal limiteAprovado = fator.multiply(limiteBasico);
+
+                    CartaoAprovado aprovado = new CartaoAprovado();
+                    aprovado.setCartao(cartao.getNome());
+                    aprovado.setBandeira(cartao.getBandeira());
+                    aprovado.setLimiteAprovado(limiteAprovado);
+
+                    return aprovado;
+                }).collect(Collectors.toList());
+                
+                return new RetornoAvaliacaoCliente(listaCartoesAprovados);
+            }  catch (FeignException.FeignClientException e) {
+                int status = e.status();
+                
+                if(HttpStatus.NOT_FOUND.value() == status) {
+                    throw new DadosClienteNotFoundException();
+                }
+        
+                throw new ErroComunicacaoMicroservicesException(cpf, status);
+            }
+        }
+    }
+
+Controller:
+
+    package cio.github.cainamicael.msavaliadorcredito.application;
+
+
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.http.HttpStatus;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.web.bind.annotation.GetMapping;
+    import org.springframework.web.bind.annotation.PostMapping;
+    import org.springframework.web.bind.annotation.RequestBody;
+    import org.springframework.web.bind.annotation.RequestMapping;
+    import org.springframework.web.bind.annotation.RequestParam;
+    import org.springframework.web.bind.annotation.RestController;
+
+    import cio.github.cainamicael.msavaliadorcredito.application.ex.DadosClienteNotFoundException;
+    import cio.github.cainamicael.msavaliadorcredito.application.ex.ErroComunicacaoMicroservicesException;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.DadosAvaliacao;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.RetornoAvaliacaoCliente;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.SituacaoCliente;
+
+    @RestController
+    @RequestMapping("avaliacoes-credito")
+    public class AvaliadorCreditoController {
+        
+        @Autowired
+        private AvaliadorCreditoService avaliadorCreditoService;
+        
+        @GetMapping
+        public String status() {
+            return "OK";
+        }
+        
+        @GetMapping(value = "situacao-cliente", params = "cpf")
+        public ResponseEntity<?> consultaSituacaoCliente(@RequestParam("cpf") String cpf) {
+            try {
+                SituacaoCliente situacaoCliente = avaliadorCreditoService.obterSituacaoCliente(cpf);
+                return ResponseEntity.ok(situacaoCliente);
+            } catch (DadosClienteNotFoundException e) {
+                // TODO Auto-generated catch block
+                return ResponseEntity.notFound().build();
+            } catch (ErroComunicacaoMicroservicesException e) {
+                // TODO Auto-generated catch block
+                return ResponseEntity.status(HttpStatus.resolve(e.getStatus())).body(e.getMessage());
+            }
+        }
+        
+        @PostMapping
+        public ResponseEntity realizarAvaliacao(@RequestBody DadosAvaliacao dados) {
+            try {
+                RetornoAvaliacaoCliente retornoAvaliacaoCliente = avaliadorCreditoService.realizarAvaliacao(dados.getCpf(), dados.getRenda());
+                return ResponseEntity.ok(retornoAvaliacaoCliente);
+            } catch (DadosClienteNotFoundException e) {
+                // TODO Auto-generated catch block
+                return ResponseEntity.notFound().build();
+            } catch (ErroComunicacaoMicroservicesException e) {
+                // TODO Auto-generated catch block
+                return ResponseEntity.status(HttpStatus.resolve(e.getStatus())).body(e.getMessage());
+            }	
+        }
+    }
+
+Resource (FeignClient):
+
+    package cio.github.cainamicael.msavaliadorcredito.infra.clients;
+
+    import java.util.List;
+
+    import org.springframework.cloud.openfeign.FeignClient;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.web.bind.annotation.GetMapping;
+    import org.springframework.web.bind.annotation.RequestParam;
+
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.Cartao;
+    import cio.github.cainamicael.msavaliadorcredito.domain.model.CartaoCliente;
+
+    @FeignClient(value = "mscartoes", path = "/cartoes")
+    public interface CartoesResourceClient {
+        
+        @GetMapping(params = "cpf")
+        ResponseEntity<List<CartaoCliente>> getCartoesByCliente(@RequestParam("cpf") String cpf);
+        
+        @GetMapping(params = "renda")
+        ResponseEntity<List<Cartao>> getCartoesRendaAte(@RequestParam("renda") Long renda);
+
+    }
