@@ -15,6 +15,7 @@ import cio.github.cainamicael.msavaliadorcredito.application.ex.DadosClienteNotF
 import cio.github.cainamicael.msavaliadorcredito.application.ex.ErroComunicacaoMicroservicesException;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.DadosAvaliacao;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.DadosSolicitacaoEmissaoCartao;
+import cio.github.cainamicael.msavaliadorcredito.domain.model.ProtocoloSolicitacaoCartao;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.RetornoAvaliacaoCliente;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.SituacaoCliente;
 
@@ -45,7 +46,7 @@ public class AvaliadorCreditoController {
 	}
 	
 	@PostMapping
-	public ResponseEntity realizarAvaliacao(@RequestBody DadosAvaliacao dados) {
+	public ResponseEntity<?> realizarAvaliacao(@RequestBody DadosAvaliacao dados) {
 		try {
 			RetornoAvaliacaoCliente retornoAvaliacaoCliente = avaliadorCreditoService.realizarAvaliacao(dados.getCpf(), dados.getRenda());
 			return ResponseEntity.ok(retornoAvaliacaoCliente);
@@ -58,10 +59,11 @@ public class AvaliadorCreditoController {
 		}	
 	}
 	
-	@PostMapping
-	public ResponseEntity solicitarCartao(@RequestBody DadosSolicitacaoEmissaoCartao dados) {
+	@PostMapping("solicitacoes-cartao")
+	public ResponseEntity<?> solicitarCartao(@RequestBody DadosSolicitacaoEmissaoCartao dados) {
 		try {
-			avaliadorCreditoService.solicitarEmissaoCartao(dados);
+			ProtocoloSolicitacaoCartao protocolo = avaliadorCreditoService.solicitarEmissaoCartao(dados);
+			return ResponseEntity.ok(protocolo);
 		} catch (Exception e) {
 			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
