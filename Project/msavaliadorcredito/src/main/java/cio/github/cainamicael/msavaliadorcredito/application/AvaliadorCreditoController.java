@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import cio.github.cainamicael.msavaliadorcredito.application.ex.DadosClienteNotFoundException;
 import cio.github.cainamicael.msavaliadorcredito.application.ex.ErroComunicacaoMicroservicesException;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.DadosAvaliacao;
+import cio.github.cainamicael.msavaliadorcredito.domain.model.DadosSolicitacaoEmissaoCartao;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.RetornoAvaliacaoCliente;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.SituacaoCliente;
 
@@ -55,5 +56,14 @@ public class AvaliadorCreditoController {
 			// TODO Auto-generated catch block
 			return ResponseEntity.status(HttpStatus.resolve(e.getStatus())).body(e.getMessage());
 		}	
+	}
+	
+	@PostMapping
+	public ResponseEntity solicitarCartao(@RequestBody DadosSolicitacaoEmissaoCartao dados) {
+		try {
+			avaliadorCreditoService.solicitarEmissaoCartao(dados);
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(e.getMessage());
+		}
 	}
 }

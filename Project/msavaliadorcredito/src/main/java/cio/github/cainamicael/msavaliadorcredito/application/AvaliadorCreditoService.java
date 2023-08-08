@@ -2,6 +2,7 @@ package cio.github.cainamicael.msavaliadorcredito.application;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +12,18 @@ import org.springframework.stereotype.Service;
 
 import cio.github.cainamicael.msavaliadorcredito.application.ex.DadosClienteNotFoundException;
 import cio.github.cainamicael.msavaliadorcredito.application.ex.ErroComunicacaoMicroservicesException;
+import cio.github.cainamicael.msavaliadorcredito.application.ex.ErroSolicitacaoCartaoException;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.Cartao;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.CartaoAprovado;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.CartaoCliente;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.DadosCliente;
+import cio.github.cainamicael.msavaliadorcredito.domain.model.DadosSolicitacaoEmissaoCartao;
+import cio.github.cainamicael.msavaliadorcredito.domain.model.ProtocoloSolicitacaoCartao;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.RetornoAvaliacaoCliente;
 import cio.github.cainamicael.msavaliadorcredito.domain.model.SituacaoCliente;
 import cio.github.cainamicael.msavaliadorcredito.infra.clients.CartoesResourceClient;
 import cio.github.cainamicael.msavaliadorcredito.infra.clients.ClienteResourceClient;
+import cio.github.cainamicael.msavaliadorcredito.infra.mqueue.SolicitacaoEmissaoCartaoPublisher;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +36,9 @@ public class AvaliadorCreditoService {
 	
 	@Autowired
 	private CartoesResourceClient cartoesClient;
+	
+	@Autowired
+	private SolicitacaoEmissaoCartaoPublisher emissaoCartaoPublisher;
 
 	
 	public SituacaoCliente obterSituacaoCliente(String cpf) throws DadosClienteNotFoundException, ErroComunicacaoMicroservicesException {
@@ -90,6 +98,16 @@ public class AvaliadorCreditoService {
 			}
 	
 			throw new ErroComunicacaoMicroservicesException(cpf, status);
+		}
+	}
+	
+	public ProtocoloSolicitacaoCartao solicitarEmissaoCartao(DadosSolicitacaoEmissaoCartao dados) {
+		try {
+			emissaoCartaoPublisher.solicitarCartao(dados);
+			var protocolo = UUID.randomUUID().toString();
+			return new ProtocoloSolicitacaoCartao(protocolo);
+		} catch (Exception e) {
+			throw new ErroSolicitacaoCartaoException(e.getMessage());
 		}
 	}
 }
