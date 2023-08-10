@@ -1358,3 +1358,32 @@ Vamos agora criar nosso realm e criar um client
 Client Authentication e Authorization deixar enable
 
 Valid redirect URIs: http://localhost:8080 (Link da api)
+
+Configurando nosso gateway com o keyclock:
+
+Dependências:
+
+    OAuth2 Resource Server
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    </dependency>
+
+Application.yml:
+
+    spring:
+    application:
+        name: mscloudgateway
+    cloud:
+        gateway:
+        discovery:
+            locator:
+            enabled: true
+            lower-case-service-id: true
+    security:
+        oauth2:
+        resourceserver:
+            jwt:
+            issuer-uri: http://localhost:8081/realms/mscourserealm #Onde irá validar o token
+
