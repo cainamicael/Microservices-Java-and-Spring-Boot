@@ -1318,3 +1318,35 @@ Completando o ouvinte (MSCARTOES - Tipando os resultados e persistindo no bd):
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Segurança da nossa api:
+
+Iremos usar o keycloak para criarmos um tokem jwt, e vamos ter as features do oauth2
+
+Levantando keycloak via docker:
+
+    docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.1 start-dev
+
+    -e = Variáveis de ambiente
+
+    Vamos mudar a porta externa para 8081, pois nossa api já roda na porta 8080
+
+    docker run --name cursomskeycloak -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.1 start-dev
