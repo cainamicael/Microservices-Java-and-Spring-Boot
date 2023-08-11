@@ -12,8 +12,10 @@ import io.github.cainamicael.mscartoes.domain.ClienteCartao;
 import io.github.cainamicael.mscartoes.domain.DadosSolicitacaoEmissaoCartao;
 import io.github.cainamicael.mscartoes.infra.repository.CartaoRepository;
 import io.github.cainamicael.mscartoes.infra.repository.ClienteCartaoRepository;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class EmissaoCartaoSubscriver {
 	
 	@Autowired
@@ -37,7 +39,7 @@ public class EmissaoCartaoSubscriver {
 			
 			clienteCartaoRepository.save(clienteCartao);
 		} catch(Exception e) {
-			e.printStackTrace();
+			log.error("Erro ao receber solicitação de emissão de cartão: {}", e.getMessage());
 		}
 	}
 }
