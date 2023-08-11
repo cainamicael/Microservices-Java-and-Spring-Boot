@@ -1400,3 +1400,74 @@ token: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ5clQtODZ4a3BudDdjYmJra
 Para decodificar, vamos no jwt.io
 
 Vamos nos nossos endpoints do postman e colamos o token - BEARER TOKEN
+
+Segurança do nosso Discovery Server:
+
+Temos que evitar que qualquer micro serviço se conecte no nosso eureka
+
+Dependências:
+
+    Spring Security
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+Application.yml:
+
+    spring:
+    application:
+        name: eurekaserver
+    security:
+        basic:
+        enabled: true
+        user:
+        name: cursoms-eureka-user
+        password: smu-sroekreuurac-es
+
+Classe de configuração:
+
+Notations: 
+
+    @EnableWebSecurity
+
+Classe:
+
+    package io.github.cainamicael.eurekaserver;
+
+    import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+    import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+    import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+    @EnableWebSecurity
+    public class SecurityConfig extends WebSecurityConfigurerAdapter{
+        
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                .csrf().disable() //Porque não estamos usando formulário
+                .authorizeHttpRequests().anyRequest().authenticated() //Dizendo que qualquer requisição, precisa-se de uma autenticação
+                .and()
+                .httpBasic(); //Autenticação básica
+        }
+
+    }
+
+Nosso eureka já está protegido!
+
+Configurando microservices para se logar no eureka:
+
+Application.yml:
+
+Vamos mudar o dafaultZone para: http://usuario:senha@localhost:8761/eureka
+
+    #Localizando o eureka e setando nome com sufixo aleatorio - não pode esquecer do /eureka
+    eureka:
+    client:
+        service-url:
+        defaultZone: http://cursoms-eureka-user:smu-sroekreuurac-es@localhost:8761/eureka
+    instance:
+        instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+Vamos replicar em todos os nossos microservices
