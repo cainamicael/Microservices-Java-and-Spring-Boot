@@ -6,11 +6,13 @@ O projeto de **Gerenciamento de Clientes e Cartões** é uma solução moderna e
 
 O projeto é composto por três microservices principais:
 
-1. **MSClientes**: Responsável pelo gerenciamento de informações dos clientes. Fornece endpoints para criar novos clientes e buscar informações detalhadas de clientes existentes com base em seu CPF. Cada requisição é autenticada por um token JWT obtido através do Keycloak, garantindo segurança e autorização adequadas.
+1. **MSClientes**: Responsável pelo gerenciamento de informações dos clientes. Fornece endpoints para criar novos clientes e buscar informações detalhadas de clientes existentes com base em seu CPF. 
 
 2. **MSCartoes**: Gerencia as informações relacionadas aos cartões de crédito. Permite a criação de novos cartões com base em critérios como nome, renda e limite. Além disso, fornece endpoints para buscar cartões com base na renda do cliente ou no CPF do cliente associado.
 
 3. **MSAvaliadorCredito**: Realiza avaliações de crédito para os clientes e determina os limites dos cartões. Fornece endpoints para verificar a situação de um cliente, com detalhes sobre seus cartões, com base no CPF. Também executa avaliações de crédito com base na renda do cliente e oferece endpoints para salvar informações sobre as solicitações de cartão aprovadas.
+
+**Cada requisição é autenticada por um token JWT obtido através do Keycloak, garantindo segurança e autorização adequadas.**
 
 ## Comunicação e Tecnologias
 
