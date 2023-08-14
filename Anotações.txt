@@ -1608,3 +1608,16 @@ Endpoint correspondente: /swagger-ui/index.html
 
 Docker: 
 
+Vamos criar as imagens docker dos nossos microservices
+
+Imagem do eureka:
+
+Vamos empacotar nossa aplicação:
+
+./mvnw (powershell) ou mvnw
+
+comando:
+
+    mvnw clean package -DskipTests # Esta ultima flag é para pular os testes
+
+O jar irá aparecer na pasta target
