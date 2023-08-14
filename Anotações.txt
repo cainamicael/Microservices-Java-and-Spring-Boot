@@ -1621,3 +1621,5 @@ comando:
     mvnw clean package -DskipTests # Esta ultima flag é para pular os testes
 
 O jar irá aparecer na pasta target
+
+Para rodar via jar, o comando no terminal (na pasta do arquivo) é:  java -jar .\eurekaserver-0.0.1-SNAPSHOT.jar 
