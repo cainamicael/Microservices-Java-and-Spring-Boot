@@ -33,6 +33,7 @@ Para garantir a segurança e a autenticação, o projeto utiliza o **Keycloak** 
 - RabbitMQ
 - OpenFeign
 - Keycloak
+- OpenApi, Swagger UI
 
 ## Endpoints de Cada Microservice
 
