@@ -1554,4 +1554,16 @@ Application.yml:
         name: ./logs/log-file.log
 
 Para mais endpoints, usar a rota /actuator
+AVISO: Não compartilhamos essas informações no gateway!
 
+Open Api e Swagger UI - Documentação da api:
+
+Dependência (https://springdoc.org/): 
+
+    <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-ui</artifactId>
+        <version>1.6.8</version>
+    </dependency>
+
+Endpoint correspondente: /swagger-ui/index.html
