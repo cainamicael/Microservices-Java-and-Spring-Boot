@@ -1525,3 +1525,33 @@ Classe:
             }
         }
     }
+
+Actuator, métricas e logs:
+
+Atuador (/actuator/info):
+
+Dependência - Nos microservices:
+
+    Actuator
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+Application.yml:
+
+    # Expondo todos os endpoints do actuator
+    management:
+    endpoints:
+        web:
+        exposure:
+            include: '*'
+
+    # Criando nosso arquivo de log
+    logging:
+    file:
+        name: ./logs/log-file.log
+
+Para mais endpoints, usar a rota /actuator
+
