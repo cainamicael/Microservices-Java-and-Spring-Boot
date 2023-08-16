@@ -3,7 +3,7 @@ spring:
   application:
     name: mscartoes
   rabbitmq:
-    host: localhost
+    host: cursoms-rabbitmq
     port: 5672
     username: guest
     password: guest
@@ -16,7 +16,7 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://cursoms-eureka-user:smu-sroekreuurac-es@localhost:8761/eureka
+      defaultZone: http://cursoms-eureka-user:smu-sroekreuurac-es@cursoms-eureka:8761/eureka
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 

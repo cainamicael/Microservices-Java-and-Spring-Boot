@@ -1660,4 +1660,44 @@ Este método acima serve para quando já temos o arquivo buildado, o build manua
 
 Como buildar também via docker, build automático:
 
+Para o build automático, precisaremos também da imagem do maven
+
+    FROM maven:3.8.5-openjdk-17 as build  #Apelidamos isso de build
+    WORKDIR /app
+    COPY . . #Copiar tudo para o "build"
+    RUN mvn clean package -DskipTests #Rodar o comando para empacotar a aplicação - mvn é uma variável de ambiente
+
+    FROM openjdk:17
+    WORKDIR /app
+    COPY --from=build ./app/target/*.jar ./app.jar  #Estamos referenciando a pasta target do container, e copiando tudo que tiver a extensão .jar, e não da ide.
+    EXPOSE 8761
+    ENTRYPOINT java -jar app.jar
+
+Buildando: docker build --tag cursoms-eureka .
+
+Rodando: docker run --name cursoms-eureka -p 8761:8761 cursoms-eureka
+
+Rodando dentro da network: docker run --name cursoms-eureka -p 8761:8761 --network cursoms-network cursoms-eureka
+
+Dockerizando nosso mscartoes:
+
+Vamos criar nossa network - Os containers são isolados, então usar o localhost não irá funcionar. Por isso precisamos de uma network:
+
+    docker network create cursoms-network
+
+    Os hosts dessa rede serão referenciados pelo nome do container
+
+    Ex: no rebbitmq o host era localhost - agora será cursoms-rabbitmq
+
+Vamos ter que alterar todos os nossos containers e apontar para esta network
+
+Mudanças no application.yml do mscartoes:
+
+    host: cursoms-rabbitmq 
+
+    defaultZone: http://cursoms-eureka-user:smu-sroekreuurac-es@cursoms-eureka:8761/eureka 
+
+build (mesmo Dockerfile): docker build --tag cursoms-cartoes .
+
+run (Já que estamos usando portas randomicas, não precisamos usar a flag -p): docker run --name cursoms-cartoes --network cursoms-network cursoms-cartoes 
 
