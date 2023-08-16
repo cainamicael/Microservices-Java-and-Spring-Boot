@@ -1623,3 +1623,41 @@ comando:
 O jar irá aparecer na pasta target
 
 Para rodar via jar, o comando no terminal (na pasta do arquivo) é:  java -jar .\eurekaserver-0.0.1-SNAPSHOT.jar 
+
+Criando imagem docker:
+
+Na raiz da aplicação cria um arquivo chamado Dockerfile - Nele terá todas as intruções para criarmos nossa imagem docker
+
+Primeiro comando - FROM (O que precisamos para rodar nossa imagem, no caso o jdk):
+
+    FROM openjdk:17
+
+Segundo comando - WORKDIR (Diretório no container):
+
+    WORKDIR /app  # Criamos uma pasta chamada app
+
+Terceiro comando - COPY (Copiar do nosso diretório atual, renomerar e mover para a pasta app que criamos acima ):
+
+    COPY ./target/eurekaserver-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE (Porta que vamos expor): 
+
+    EXPOSE 8761
+
+ENTRYPOINT (Comando para rodar nosso arquivo renomeado):
+
+    ENTRYPOINT java -jar app.jar
+
+Depois de setadas as configurações no Dockerfile, vamos criar nossa imagem. Vamos no terminal buildar nossa imagem:
+
+    docker build --tag cursoms-eureka:1.0 . #Não esquecer o . - Ele diz que o Dockerfile está na raiz 
+
+Criando container através da imagem:
+
+    docker run --name teste-eureka -p 8761:8761 cursoms-eureka:1.0
+
+Este método acima serve para quando já temos o arquivo buildado, o build manual.
+
+Como buildar também via docker, build automático:
+
+
