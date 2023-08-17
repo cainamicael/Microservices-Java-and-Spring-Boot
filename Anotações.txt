@@ -1724,3 +1724,50 @@ Vamos buildar novamente nossa imagem:
 Criando container setando as variáveis de ambiente:
 
     docker run --name cursoms-cartoes --network cursoms-network -e RABBITMQ_SERVER=cursoms-rabbitmq -e EUREKA_SERVER=cursoms-eureka -d cursoms-cartoes 
+
+Dockerizando os outros microsserviços:
+
+MSClientes:
+
+    #Fazendo o build
+    FROM maven:3.8.5-openjdk-17 as build 
+    WORKDIR /app
+    COPY . .
+    RUN mvn clean package -DskipTests
+
+    #Criando imagem com o jar
+    FROM openjdk:17
+    WORKDIR /app
+    COPY --from=build ./app/target/*.jar ./app.jar 
+
+    #Criando parâmetros
+    ARG EUREKA_SERVER=localhost
+
+    ENTRYPOINT java -jar app.jar
+
+    docker build --tag cursoms-clientes .
+
+    docker run --name cursoms-clientes --network cursoms-network -e EUREKA_SERVER=cursoms-eureka -d cursoms-clientes
+
+MSAvaliadorcredito:
+
+    #Fazendo o build
+    FROM maven:3.8.5-openjdk-17 as build 
+    WORKDIR /app
+    COPY . .
+    RUN mvn clean package -DskipTests
+
+    #Criando imagem com o jar
+    FROM openjdk:17
+    WORKDIR /app
+    COPY --from=build ./app/target/*.jar ./app.jar 
+
+    #Criando parâmetros
+    ARG EUREKA_SERVER=localhost
+    ARG RABBITMQ_SERVER=rabbitmq-host
+
+    ENTRYPOINT java -jar app.jar
+
+    docker build --tag cursoms-avaliadorcredito .
+
+    docker run --name cursoms-avaliadorcredito --network cursoms-network -e RABBITMQ_SERVER=cursoms-rabbitmq -e EUREKA_SERVER=cursoms-eureka -d cursoms-avaliadorcredito
