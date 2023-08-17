@@ -1782,3 +1782,38 @@ Conectando o keycloak na network:
 
 Dockerização do gateway:
 
+    issuer-uri: http://${KEYCLOAK_SERVER}:${KEYCLOAK_PORT}/realms/mscourserealm
+
+    Dockerfile:
+
+    #Fazendo o build
+    FROM maven:3.8.5-openjdk-17 as build 
+    WORKDIR /app
+    COPY . .
+    RUN mvn clean package -DskipTests
+
+    #Criando imagem com o jar
+    FROM openjdk:17
+    WORKDIR /app
+    COPY --from=build ./app/target/*.jar ./app.jar 
+
+    #Criando parâmetros
+    ARG EUREKA_SERVER=localhost
+    ARG KEYCLOAK_SERVER=localhost
+    ARG KEYCLOAK_PORT=8081
+
+    ENTRYPOINT java -jar app.jar
+
+    docker build -t cursoms-gateway .
+
+    AVISO: Quando estávamos em ambiente local, usavamos o keycloak na porta 8081, pois era a porta espelhada para fora. 
+    Mas como estamos a nível de container, vamos usa-lo na porta 8080, que é a porta interna do container
+
+    docker run --name cursoms-gateway --network cursoms-network -p 8080:8080 -e EUREKA_SERVER=cursoms-eureka -e KEYCLOAK_SERVER=cursoms-keycloak -e KEYCLOAK_PORT=8080 -d cursoms-gateway
+
+    Em realm settings, frontend url colocamos: http://cursoms-keycloak:8080 - vai sobrescrever a url
+
+Pegando via postman o token:
+
+    pegamos o client secret novamente no keycloak
+
