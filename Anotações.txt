@@ -1697,7 +1697,30 @@ Mudanças no application.yml do mscartoes:
 
     defaultZone: http://cursoms-eureka-user:smu-sroekreuurac-es@cursoms-eureka:8761/eureka 
 
-build (mesmo Dockerfile): docker build --tag cursoms-cartoes .
+build (mesmo Dockerfile - Só deletar o EXPORT): docker build --tag cursoms-cartoes .
 
 run (Já que estamos usando portas randomicas, não precisamos usar a flag -p): docker run --name cursoms-cartoes --network cursoms-network cursoms-cartoes 
 
+Configurando variáveis de ambiente para os hosts:
+
+    host: ${RABBITMQ_SERVER}
+
+    defaultZone: http://cursoms-eureka-user:smu-sroekreuurac-es@${EUREKA_SERVER}:8761/eureka
+
+Referenciando variável de ambiente:
+
+Dockerfile - Passando valores padrões:
+
+    #Criando parâmetros
+    ARG RABBITMQ_SERVER=rabbitmq-host
+    ARG EUREKA_SERVER=localhost
+
+    ENTRYPOINT java -jar app.jar
+
+Vamos buildar novamente nossa imagem:
+
+    docker build --tag cursoms-cartoes .
+
+Criando container setando as variáveis de ambiente:
+
+    docker run --name cursoms-cartoes --network cursoms-network -e RABBITMQ_SERVER=cursoms-rabbitmq -e EUREKA_SERVER=cursoms-eureka -d cursoms-cartoes 
