@@ -1771,3 +1771,13 @@ MSAvaliadorcredito:
     docker build --tag cursoms-avaliadorcredito .
 
     docker run --name cursoms-avaliadorcredito --network cursoms-network -e RABBITMQ_SERVER=cursoms-rabbitmq -e EUREKA_SERVER=cursoms-eureka -d cursoms-avaliadorcredito
+
+Conectando o keycloak na network:
+
+    Exportamos nosso realm antes de deletarmos o container - Limpar no jason as policies (deixar o array vazio)
+
+    docker run --name cursoms-keycloak --network cursoms-network -p 8081:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.1 start-dev
+
+    importar nosso Realm
+
+Dockerização do gateway
