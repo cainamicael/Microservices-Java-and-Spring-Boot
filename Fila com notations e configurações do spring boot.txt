@@ -1,0 +1,130 @@
+"Fila" para Spring Boot 
+
+Configurando o arquivo application.properties:
+
+	spring.profiles.active=${APP_PROFILE:test}
+	spring.jpa.open-in-view=false
+
+	cors.origins=${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+Configurando application-test.properties (Banco h2):
+
+	# H2 Connection
+	spring.datasource.url=jdbc:h2:mem:testdb
+	spring.datasource.username=sa
+	spring.datasource.password=
+
+	# H2 Client
+	spring.h2.console.enabled=true
+	spring.h2.console.path=/h2-console
+
+	# Show SQL
+	spring.jpa.show-sql=true
+	spring.jpa.properties.hibernate.format_sql=true
+
+Entity:
+
+	@Entity
+	@Table(name = 'tb_game')
+    @Data caso use lombok e @NoArgsConstructor
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "game_year") //Para que no banco, o nome não fique year, pois dá conflito
+	@Column(columnDefinition = "TEXT") //Para dizer que não vai ser vaschar, e sim text
+    @Enumerated(EnumType.STRING)
+
+    Avançado:
+
+    @Embeddable /*Para dizer no belonging que estes dois campos serão 1 atributo*/
+	@ManyToOne //Tipo do relacionamento - Informar em cada uma das chaves estrangeiras
+	@JoinColumn(name = "game_id") //Chave estrangeira 01
+	@JoinColumn(name = "list_id") //Chave estrangeira 
+
+    @Entity
+	@Table(name = "tb_belonging")
+	@EmbeddedId
+
+    @EmbeddedId //Para fazer referência a BelongingPK
+	private BelongingPK id = new BelongingPK();
+
+Enum:
+
+    public enum CategoriasEnum {
+        ADORACAO, CELEBRACAO
+    }
+
+Usando enum:
+
+    public List<MusicasDTO> listarPelaCategoria(String categoriaStr) {
+		CategoriasEnum categoria = CategoriasEnum.valueOf(categoriaStr.toUpperCase());
+
+Repository:
+
+    public interface MusicasRepository extends JpaRepository<Musicas, Long> {
+        
+        //Buscar música pela categoria
+        List<Musicas> findByCategoria(CategoriasEnum categoria);
+        
+    }
+
+    Avançado:
+
+    @Query(nativeQuery = true, value = """ AQUI VAI A QUERY SQL """)
+    void método(Tipo parametro);
+
+    Tipo 2:
+
+    @Modifying
+	@Query(nativeQuery = true, value = "UPDATE tb_belonging SET position = :newPosition WHERE list_id = :listId AND game_id = :gameId")
+	void updateBelongingPosition(Long listId, Long gameId, Integer newPosition);
+
+Service:
+
+    @Service ou @Component
+    @Autowired
+    @Transational ou @org.springframework.transaction.annotation.Transactional(readOnly = true)
+
+Controller:
+
+    @RestController
+    @RequestMapping(value = "/musicas")
+
+    @GetMapping(value = "/{id}")
+	public MusicasDTO buscarPeloId(@PathVariable("id") Long id)
+
+    @GetMapping(params = "categoria")
+	public List<MusicasDTO> listarPelaCategoria(@RequestParam("categoria") String categoria)
+
+    @PostMapping
+	public void criar(@RequestBody MusicasDTO musica)
+
+    @DeleteMapping
+
+	@PutMapping
+    public void actualizar(@RequestBody MusicasDTO musica)
+
+DTO:
+
+    @Data caso use lombok e @NoArgsConstructor
+
+Configurando cors (Autorizo os hosts que vão consumir minha api):
+
+Vamos criar uma classe chamada WebConfig, no pacote config:
+
+	@Configuration
+	public class WebConfig {
+
+		@Value("${cors.origins}")
+		private String corsOrigins;
+		
+		@Bean
+		public WebMvcConfigurer corsConfigurer() {
+			return new WebMvcConfigurer() {
+				@Override
+				public void addCorsMappings(CorsRegistry registry) {
+					registry.addMapping("/**").allowedMethods("*").allowedOrigins(corsOrigins);
+				}
+			};
+		}
+		
+	}
