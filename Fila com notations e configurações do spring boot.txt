@@ -153,3 +153,19 @@ public class CorsConfig implements WebMvcConfigurer {
             .allowedHeaders("*");
     }
 }
+
+Conectando com o postgres:
+
+	docker run --name postgres_container_mydb_root_1234567 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=1234567 -e POSTGRES_DB=mydb -p 5432:5432 	postgres
+
+	#Criar o create.sql, mas não vai precisar pois a tabela será criada automaticamente
+	#spring.jpa.properties.jakarta.persistence.schema-generation.create-source=metadata
+	#spring.jpa.properties.jakarta.persistence.schema-generation.scripts.action=create
+	#spring.jpa.properties.jakarta.persistence.schema-generation.scripts.create-target=create.sql
+	#spring.jpa.properties.hibernate.hbm2ddl.delimiter=;
+
+	spring.datasource.url=jdbc:postgresql://localhost:5432/mydb
+	spring.datasource.username=root
+	spring.datasource.password=1234567
+	spring.jpa.hibernate.ddl-auto=update #Para já criar a tabela
+	spring.jpa.show-sql=true
