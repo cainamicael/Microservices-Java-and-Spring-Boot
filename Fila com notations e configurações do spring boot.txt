@@ -107,6 +107,10 @@ DTO:
 
     @Data caso use lombok e @NoArgsConstructor
 
+system.properties: Algumas plataformas de hospedagem exigem este arquivo, que fica na raiz do projeto (mesmo local onde está o pom.xml). Vamos criar:
+
+	java.runtime.version=17 # Colocar a versão do java usada. É só ver no pom.xml
+
 Configurando cors (Autorizo os hosts que vão consumir minha api):
 
 Vamos criar uma classe chamada WebConfig, no pacote config:
