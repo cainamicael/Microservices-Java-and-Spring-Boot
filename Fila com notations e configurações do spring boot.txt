@@ -167,5 +167,10 @@ Conectando com o postgres:
 	spring.datasource.url=jdbc:postgresql://localhost:5432/mydb
 	spring.datasource.username=root
 	spring.datasource.password=1234567
+
+	#qualquer erro, excluir estar 2 linhas
+	spring.jpa.database-platform=org.hibernate.dialectPostgreSQLDialect
+	spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
+
 	spring.jpa.hibernate.ddl-auto=update #Para já criar a tabela
 	spring.jpa.show-sql=true
